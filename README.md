@@ -43,6 +43,12 @@ Optional local port override:
 cp .env.example .env
 ```
 
+If you want localhost-only binding during local development, set:
+
+```bash
+HOST=127.0.0.1 npm run dev
+```
+
 ## Minimal Smoke Test
 
 Start the server:
@@ -88,10 +94,12 @@ curl -sS \
 
 ## Environment Variables
 
-- `PORT`: bind port, default `3000`; loaded from optional `.env` by `npm run dev` and `npm start`
-- `HOST`: optional shell env override, default `127.0.0.1`
+- `PORT`: bind port, default `3000`; loaded from optional `.env` by `npm run dev` and from platform env in production
+- `HOST`: optional shell env override, default `0.0.0.0`; set `HOST=127.0.0.1` for localhost-only development
 - `MCP_PATH`: optional shell env override, default `/`
 - `ALLOWED_HOSTS`: optional shell env override when binding beyond localhost
+
+For PaaS/container deployments, keep the default `HOST=0.0.0.0` and let the platform provide `PORT`.
 
 ## Project Layout
 
