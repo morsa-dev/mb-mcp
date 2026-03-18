@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.9.0"
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch --import tsx src/server.ts",

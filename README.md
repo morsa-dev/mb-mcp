@@ -15,7 +15,7 @@ Current `docs_context` support is intentionally narrow:
 
 ## Runtime
 
-- Node.js 20.9+
+- Node.js 22.9+
 - official MCP TypeScript SDK
 - stateless Streamable HTTP transport
 - JSON response mode enabled
@@ -90,7 +90,7 @@ curl -sS \
 
 - `PORT`: bind port, default `3000`; loaded from optional `.env` by `npm run dev` and `npm start`
 - `HOST`: optional shell env override, default `127.0.0.1`
-- `MCP_PATH`: optional shell env override, default `/mcp`
+- `MCP_PATH`: optional shell env override, default `/`
 - `ALLOWED_HOSTS`: optional shell env override when binding beyond localhost
 
 ## Project Layout
