@@ -53,20 +53,12 @@ Current `docs_context` support is intentionally narrow:
 - does not require auth
 - only returns instructions and documentation context
 
-<details>
-<summary>Runtime</summary>
+## Technical Details
 
 - Node.js 22.9+
 - official MCP TypeScript SDK
 - stateless Streamable HTTP transport
 - JSON response mode enabled
-
-Endpoints on a deployment:
-
-- MCP: `/`
-- Health: `/healthz`
-
-</details>
 
 ## Open Source
 
@@ -75,8 +67,10 @@ Endpoints on a deployment:
 - `src/features/docsContext`: documentation-context orchestration
 - `src/adapters/appleDocs`: Apple documentation lookup and extraction
 
+## Local Development
+
 <details>
-<summary>Local development</summary>
+<summary>Show local setup</summary>
 
 Local development is optional.
 
