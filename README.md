@@ -1,4 +1,4 @@
-# mb-mcp
+# Memory Bank MCP
 
 Public MCP server for Morsa.
 
