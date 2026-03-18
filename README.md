@@ -1,117 +1,117 @@
 # mb-mcp
 
-Standalone Node.js/TypeScript MCP server for Memory Bank workflows.
+Public MCP server for Morsa.
 
-This repository is intentionally small: one MCP server, two public tools, no auth, no persistence, and no transport-specific hacks beyond the official MCP TypeScript SDK.
+Morsa is a governance layer for AI coding. This server is the public MCP entrypoint for generating Memory Bank baselines and returning supporting documentation context for supported project types.
 
-## Tools
+This repository contains the open-source implementation of the server.
 
-- `create`: returns execution instructions for generating a project-specific Memory Bank from a real codebase
-- `docs_context`: searches official documentation context and returns compact snippets plus optional structured enrichment
+## Quick Start
+
+Connect your MCP client to the hosted server endpoint.
+
+- Endpoint: `https://mcp.morsa.io/api/external/mcp`
+- Transport: Streamable HTTP
+- Setup instructions for Cursor / Codex / Claude: https://mcp.morsa.io/mcp-instructions
+
+If you are using a self-hosted deployment, point your client to that deployment URL.
+
+## Why Connect To This Server
+
+Use this MCP if you want an agent to generate a project-specific Memory Bank without hand-writing the workflow yourself.
+
+- `create` is the main capability: it returns executable instructions for building a Memory Bank from real codebase patterns
+- it gives teams a consistent starting point for AI coding standards and project guidance
+- it exposes that workflow through a public MCP interface, so it can be used from external agents and clients
+
+## What This MCP Does
+
+- `create`: returns instructions for generating a project-specific Memory Bank from a real codebase
+- `docs_context`: returns documentation context that can be attached to supported flows when extra reference material is useful
+
+## Supported Scope
+
+`create` is currently intended for these project types:
+
+- iOS
+- Angular
+- React
+- Next.js
+- Node.js
 
 Current `docs_context` support is intentionally narrow:
-- supported stack: `ios`
-- supported detail levels: `compact`, `structured`
 
-## Runtime
+- `stack`: `ios`
+- `detailLevel`: `compact`, `structured`
+
+## Security / Safety
+
+- does not receive the user's code or repository contents directly
+- code inspection and file changes happen on the client-side coding agent, not on this server
+- does not index repositories
+- does not store user data or project contents
+- does not require auth
+- only returns instructions and documentation context
+
+<details>
+<summary>Runtime</summary>
 
 - Node.js 22.9+
 - official MCP TypeScript SDK
 - stateless Streamable HTTP transport
 - JSON response mode enabled
-- no authentication
 
-Default endpoints:
-- MCP: `http://127.0.0.1:3000/`
-- Health: `http://127.0.0.1:3000/healthz`
+Endpoints on a deployment:
 
-## Development
+- MCP: `/`
+- Health: `/healthz`
+
+</details>
+
+## Open Source
+
+- `src/tools`: MCP tool registration
+- `src/features/create`: instruction generation for Memory Bank flows
+- `src/features/docsContext`: documentation-context orchestration
+- `src/adapters/appleDocs`: Apple documentation lookup and extraction
+
+<details>
+<summary>Local development</summary>
+
+Local development is optional.
 
 ```bash
 npm install
 npm run dev
+```
+
+Checks:
+
+```bash
 npm run test
 npm run typecheck
 npm run lint
 npm run build
-npm start
 ```
 
-Optional local port override:
+Optional local `.env`:
 
 ```bash
-cp .env.example .env
+PORT=3000
 ```
 
-If you want localhost-only binding during local development, set:
+For localhost-only development:
 
 ```bash
 HOST=127.0.0.1 npm run dev
 ```
 
-## Minimal Smoke Test
-
-Start the server:
-
-```bash
-npm start
-```
-
-Initialize against the MCP endpoint:
-
-```bash
-curl -sS \
-  -X POST http://127.0.0.1:3000/ \
-  -H 'Accept: application/json, text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc":"2.0",
-    "id":1,
-    "method":"initialize",
-    "params":{
-      "protocolVersion":"2025-06-18",
-      "capabilities":{},
-      "clientInfo":{"name":"smoke-test","version":"0.0.0"}
-    }
-  }'
-```
-
-List tools:
-
-```bash
-curl -sS \
-  -X POST http://127.0.0.1:3000/ \
-  -H 'Accept: application/json, text/event-stream' \
-  -H 'Content-Type: application/json' \
-  -H 'MCP-Protocol-Version: 2025-06-18' \
-  -d '{
-    "jsonrpc":"2.0",
-    "id":2,
-    "method":"tools/list",
-    "params":{}
-  }'
-```
-
-## Environment Variables
-
-- `PORT`: bind port, default `3000`; loaded from optional `.env` by `npm run dev` and from platform env in production
-- `HOST`: optional shell env override, default `0.0.0.0`; set `HOST=127.0.0.1` for localhost-only development
-- `MCP_PATH`: optional shell env override, default `/`
-- `ALLOWED_HOSTS`: optional shell env override when binding beyond localhost
-
-For PaaS/container deployments, keep the default `HOST=0.0.0.0` and let the platform provide `PORT`.
-
-## Project Layout
-
-- `src/server.ts`: process entrypoint and graceful shutdown
-- `src/http`: HTTP transport wiring
-- `src/mcp`: MCP server factory and server metadata
-- `src/tools`: MCP tool registration layer
-- `src/features/create`: `create` prompt assembly logic
-- `src/features/docsContext`: `docs_context` payload orchestration and shaping
-- `src/adapters/appleDocs`: Apple documentation search and content extraction
-- `test`: contract and unit tests for public behavior
+</details>
 
 ## License
 
 MIT
+
+## Links
+
+- Product website: https://www.morsa.io/
