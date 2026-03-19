@@ -7,14 +7,20 @@ type MockResponse = {
   headersSent: boolean;
   statusCode?: number;
   payload?: unknown;
+  contentType?: string;
   status: (code: number) => MockResponse;
+  type: (contentType: string) => MockResponse;
   json: (body: unknown) => MockResponse;
+  send: (body: unknown) => MockResponse;
 };
 
 type RouteLayer = {
   route?: {
     path?: string;
     methods?: Record<string, boolean>;
+    stack?: Array<{
+      handle: (req: unknown, res: unknown, next?: (error?: unknown) => void) => void;
+    }>;
   };
 };
 
@@ -25,7 +31,15 @@ const createMockResponse = (): MockResponse => {
       response.statusCode = code;
       return response;
     },
+    type(contentType: string) {
+      response.contentType = contentType;
+      return response;
+    },
     json(body: unknown) {
+      response.payload = body;
+      return response;
+    },
+    send(body: unknown) {
       response.payload = body;
       return response;
     },
@@ -76,7 +90,7 @@ test("createMcpBodyErrorHandler forwards non-MCP errors", () => {
     error,
     {
       method: "GET",
-      path: "/healthz",
+      path: "/instructions",
     } as never,
     response as never,
     (nextError?: unknown) => {
@@ -93,13 +107,80 @@ test("createHttpApp registers GET, POST, and DELETE on the MCP path before the c
   const app = createHttpApp({
     host: "127.0.0.1",
     port: 0,
-    mcpPath: "/",
+    mcpPath: "/mcp",
   });
 
   const mcpRoutes = app.router.stack
-    .filter((layer) => (layer as RouteLayer).route?.path === "/")
+    .filter((layer) => (layer as RouteLayer).route?.path === "/mcp")
     .map((layer) => ({ ...((layer as RouteLayer).route?.methods ?? {}) }));
 
   assert.deepEqual(mcpRoutes.slice(0, 3), [{ get: true }, { post: true }, { delete: true }]);
   assert.equal(mcpRoutes.length, 4);
+});
+
+test("createHttpApp exposes a static instructions page on the root route with the public MCP endpoint", () => {
+  const app = createHttpApp({
+    host: "127.0.0.1",
+    port: 3000,
+    mcpPath: "/mcp",
+  });
+
+  const instructionsLayer = app.router.stack.find((layer) => (layer as RouteLayer).route?.path === "/") as RouteLayer | undefined;
+
+  assert.ok(instructionsLayer?.route?.stack?.[0], "expected root instructions route to be registered");
+
+  const response = createMockResponse();
+
+  instructionsLayer.route.stack[0].handle(
+    {
+      protocol: "http",
+      get(headerName: string) {
+        if (headerName === "x-forwarded-proto") {
+          return "https";
+        }
+        if (headerName === "x-forwarded-host") {
+          return "mb-mcp.morsa.io";
+        }
+        if (headerName === "host") {
+          return "127.0.0.1:3000";
+        }
+        return undefined;
+      },
+    },
+    response,
+  );
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.contentType, "html");
+  assert.equal(typeof response.payload, "string");
+  assert.match(response.payload as string, /Memory Bank MCP Instructions/);
+  assert.match(response.payload as string, /Choose provider and setup mode/);
+  assert.match(response.payload as string, /Create Memory Bank via mcp/);
+  assert.match(response.payload as string, /https:\/\/mb-mcp\.morsa\.io\/mcp/);
+  assert.match(response.payload as string, /MemoryBank-Agent-Provider/);
+  assert.doesNotMatch(response.payload as string, /Use the create tool with/);
+});
+
+test("createHttpApp also serves the instructions page on /instructions", () => {
+  const app = createHttpApp({
+    host: "127.0.0.1",
+    port: 3000,
+    mcpPath: "/mcp",
+  });
+
+  const instructionsLayer = app.router.stack.find((layer) => (layer as RouteLayer).route?.path === "/instructions") as RouteLayer | undefined;
+
+  assert.ok(instructionsLayer?.route?.stack?.[0], "expected /instructions route to be registered");
+});
+
+test("createHttpApp also registers a favicon route for the docs pages", () => {
+  const app = createHttpApp({
+    host: "127.0.0.1",
+    port: 3000,
+    mcpPath: "/mcp",
+  });
+
+  const faviconLayer = app.router.stack.find((layer) => (layer as RouteLayer).route?.path === "/favicon.ico") as RouteLayer | undefined;
+
+  assert.ok(faviconLayer?.route?.stack?.[0], "expected /favicon.ico route to be registered");
 });

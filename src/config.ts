@@ -1,6 +1,6 @@
 const DEFAULT_HOST = "0.0.0.0";
 const DEFAULT_PORT = 3000;
-const DEFAULT_MCP_PATH = "/";
+const DEFAULT_MCP_PATH = "/mcp";
 
 export type AppConfig = {
   host: string;

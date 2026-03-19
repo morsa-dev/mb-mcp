@@ -1,3 +1,6 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import express from "express";
 
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
@@ -8,7 +11,11 @@ import {
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 import type { AppConfig } from "../config.js";
+import { renderInstructionsPage } from "../instructions/renderInstructionsPage.js";
 import { createMcpServer } from "../mcp/createMcpServer.js";
+
+const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
+const FAVICON_PATH = resolve(MODULE_DIR, "..", "..", "favicon.ico");
 
 const buildJsonRpcError = (code: number, message: string) => ({
   jsonrpc: "2.0" as const,
@@ -78,6 +85,35 @@ const connectServer = async (
   await server.connect(transport as unknown as Transport);
 };
 
+const trimTrailingSlash = (value: string): string => (value.endsWith("/") ? value.slice(0, -1) : value);
+
+const resolveRequestOrigin = (req: express.Request, config: AppConfig): string => {
+  const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const forwardedHost = req.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const protocol = forwardedProtocol || req.protocol || "http";
+  const host = forwardedHost || req.get("host") || `${config.host}:${config.port}`;
+
+  return `${protocol}://${host}`;
+};
+
+const buildPublicUrl = (origin: string, path: string): string => {
+  if (path === "/") {
+    return trimTrailingSlash(origin);
+  }
+
+  return new URL(path, `${trimTrailingSlash(origin)}/`).toString();
+};
+
+const buildInstructionsHtml = (req: express.Request, config: AppConfig): string => {
+  const origin = resolveRequestOrigin(req, config);
+
+  return renderInstructionsPage({
+    mcpUrl: buildPublicUrl(origin, config.mcpPath),
+    instructionsUrl: buildPublicUrl(origin, "/instructions"),
+    websiteUrl: "https://www.morsa.io/",
+  });
+};
+
 export const createHttpApp = (config: AppConfig): express.Express => {
   const app = createMcpExpressApp({
     host: config.host,
@@ -86,9 +122,19 @@ export const createHttpApp = (config: AppConfig): express.Express => {
 
   app.disable("x-powered-by");
 
-  app.get("/healthz", (_req, res) => {
-    res.status(200).json({ ok: true });
+  const sendInstructionsPage: express.RequestHandler = (req, res) => {
+    res.status(200).type("html").send(buildInstructionsHtml(req, config));
+  };
+
+  app.get("/favicon.ico", (_req, res) => {
+    res.sendFile(FAVICON_PATH);
   });
+
+  if (config.mcpPath !== "/") {
+    app.get("/", sendInstructionsPage);
+  }
+
+  app.get("/instructions", sendInstructionsPage);
 
   const handleMcpRequest: express.RequestHandler = async (req, res) => {
     const server = createMcpServer();

@@ -10,9 +10,10 @@ This repository contains the open-source implementation of the server.
 
 Connect your MCP client to the hosted server endpoint.
 
-- Endpoint: `https://mb-mcp.morsa.io/`
+- Hosted landing page: `https://mb-mcp.morsa.io/`
+- MCP endpoint: `https://mb-mcp.morsa.io/mcp`
 - Transport: Streamable HTTP
-- Setup instructions for Cursor / Codex / Claude: https://mcp.morsa.io/mcp-instructions
+- Setup instructions for Cursor / Codex / Claude: https://mb-mcp.morsa.io/instructions
 
 If you are using a self-hosted deployment, point your client to that deployment URL.
 
@@ -59,6 +60,8 @@ Current `docs_context` support is intentionally narrow:
 - official MCP TypeScript SDK
 - stateless Streamable HTTP transport
 - JSON response mode enabled
+- public setup guide served at `/` and `/instructions`
+- MCP endpoint served at `/mcp` by default
 
 ## Open Source
 
@@ -109,3 +112,4 @@ MIT
 ## Links
 
 - Product website: https://www.morsa.io/
+- Hosted instructions: https://mb-mcp.morsa.io/instructions
