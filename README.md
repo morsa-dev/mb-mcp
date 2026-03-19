@@ -10,7 +10,7 @@ This repository contains the open-source implementation of the server.
 
 Connect your MCP client to the hosted server endpoint.
 
-- Endpoint: `https://mcp.morsa.io/api/external/mcp`
+- Endpoint: `https://mb-mcp.morsa.io/`
 - Transport: Streamable HTTP
 - Setup instructions for Cursor / Codex / Claude: https://mcp.morsa.io/mcp-instructions
 
