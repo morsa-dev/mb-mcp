@@ -9,6 +9,8 @@ export type SetupMode = {
   snippet?: string;
   path?: string;
   hint?: string;
+  docsHref?: string;
+  docsLabel?: string;
   actionLabel?: string;
   actionHref?: string;
   hideSnippet?: boolean;

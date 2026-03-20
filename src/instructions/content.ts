@@ -1,6 +1,9 @@
 import type { ProviderGuide, ProviderId } from "./types.js";
 
 const SERVER_NAME = "memory-bank";
+const CURSOR_MCP_DOCS_URL = "https://docs.cursor.com/fr/advanced/model-context-protocol";
+const CLAUDE_MCP_DOCS_URL = "https://docs.anthropic.com/fr/docs/claude-code/mcp";
+const CODEX_MCP_DOCS_URL = "https://platform.openai.com/docs/docs-mcp";
 
 export const RUN_COMMAND = "Create Memory Bank via mcp";
 export const DOCS_CONTEXT_EXAMPLE = "Use docs_context to fetch official iOS documentation for NavigationStack.";
@@ -93,8 +96,16 @@ const getProviderConfigPath = (provider: ProviderId): string => {
 };
 
 const getProviderConfigHint = (provider: ProviderId): string => {
+  if (provider === "cursor") {
+    return 'Add the "memory-bank" entry to the file you use. Keep any unrelated MCP servers already in that file.';
+  }
+
+  if (provider === "codex") {
+    return 'Add the "memory-bank" sections to ~/.codex/config.toml. If the file already exists, append or merge them instead of replacing unrelated entries.';
+  }
+
   if (provider === "claude") {
-    return "Use root mcpServers for global setup, or projects.<ABSOLUTE_PROJECT_PATH>.mcpServers for one project.";
+    return 'Add the "memory-bank" entry under root mcpServers for global setup, or under projects. <ABSOLUTE_PROJECT_PATH>.mcpServers for one project.';
   }
 
   return "";
@@ -133,6 +144,8 @@ export const buildProviderGuides = (mcpUrl: string): ProviderGuide[] => {
           snippet: cursorConfig,
           path: getProviderConfigPath("cursor"),
           hint: getProviderConfigHint("cursor"),
+          docsHref: CURSOR_MCP_DOCS_URL,
+          docsLabel: "Cursor MCP docs",
         },
         {
           id: "cli",
@@ -186,6 +199,8 @@ export const buildProviderGuides = (mcpUrl: string): ProviderGuide[] => {
           snippet: codexConfig,
           path: getProviderConfigPath("codex"),
           hint: getProviderConfigHint("codex"),
+          docsHref: CODEX_MCP_DOCS_URL,
+          docsLabel: "OpenAI MCP docs",
         },
       ],
       reconnect: {
@@ -219,6 +234,8 @@ export const buildProviderGuides = (mcpUrl: string): ProviderGuide[] => {
           snippet: claudeConfig,
           path: getProviderConfigPath("claude"),
           hint: getProviderConfigHint("claude"),
+          docsHref: CLAUDE_MCP_DOCS_URL,
+          docsLabel: "Claude Code MCP docs",
         },
       ],
       reconnect: {

@@ -34,6 +34,12 @@ test("renderInstructionsPage restores the tested provider and setup flow contrac
   assert.match(html, /&quot;MemoryBank-Agent-Provider&quot;: &quot;cursor&quot;/);
   assert.match(html, /&quot;MemoryBank-Agent-Provider&quot;: &quot;claude&quot;/);
   assert.match(html, /&quot;MemoryBank-Agent-Provider&quot; = &quot;codex&quot;/);
+  assert.match(html, /Add the &quot;memory-bank&quot; entry to the file you use\./);
+  assert.match(html, /Add the &quot;memory-bank&quot; sections to ~\/\.codex\/config\.toml\./);
+  assert.match(html, /Add the &quot;memory-bank&quot; entry under root mcpServers for global setup/);
+  assert.match(html, /Cursor MCP docs/);
+  assert.match(html, /Claude Code MCP docs/);
+  assert.match(html, /OpenAI MCP docs/);
   assert.doesNotMatch(html, /Use the create tool with/);
   assert.doesNotMatch(html, /&quot;agentProvider&quot;/);
   assert.doesNotMatch(html, /&quot;stack&quot;/);

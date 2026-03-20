@@ -120,8 +120,8 @@ ${PAGE_STYLES}
       <div class="footer">
         Hosted by Morsa. This page is served directly from the open-source MCP server so the setup contract stays aligned with the deployed endpoint.
         <div class="footer-links">
-          <a href="https://github.com/morsa-dev/mb-mcp">GitHub</a>
-          <a href="${escapeHtml(model.websiteUrl)}">morsa.io</a>
+          <a href="https://github.com/morsa-dev/mb-mcp" target="_blank" rel="noreferrer noopener">GitHub</a>
+          <a href="${escapeHtml(model.websiteUrl)}" target="_blank" rel="noreferrer noopener">morsa.io</a>
         </div>
       </div>
     </main>

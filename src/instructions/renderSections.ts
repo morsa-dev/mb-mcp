@@ -39,6 +39,11 @@ export const renderSetupPanels = (providers: ProviderGuide[]): string =>
                       <div class="info-box-label">Config file path</div>
                       <div class="info-box-value"><code>${escapeHtml(mode.path)}</code></div>
                       ${mode.hint ? `<p class="info-box-note">${escapeHtml(mode.hint)}</p>` : ""}
+                      ${
+                        mode.docsHref && mode.docsLabel
+                          ? `<p class="info-box-links"><a href="${escapeHtml(mode.docsHref)}" class="info-box-link" target="_blank" rel="noreferrer noopener">${escapeHtml(mode.docsLabel)}</a></p>`
+                          : ""
+                      }
                     </div>
                   `
                 : mode.hint

@@ -370,6 +370,16 @@ export const PAGE_STYLES = `
         line-height: 1.55;
       }
 
+      .info-box-links {
+        margin: 10px 0 0;
+      }
+
+      .info-box-link {
+        color: var(--accent);
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+
       .code-shell {
         position: relative;
         margin-top: 14px;
