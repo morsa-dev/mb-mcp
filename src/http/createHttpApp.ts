@@ -12,6 +12,7 @@ import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 import type { AppConfig } from "../config.js";
 import { renderInstructionsPage } from "../instructions/renderInstructionsPage.js";
+import { AGENT_PROVIDER_HEADER, resolveAgentProviderHeaderValue } from "../mcp/agentProvider.js";
 import { createMcpServer } from "../mcp/createMcpServer.js";
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
@@ -137,7 +138,9 @@ export const createHttpApp = (config: AppConfig): express.Express => {
   app.get("/instructions", sendInstructionsPage);
 
   const handleMcpRequest: express.RequestHandler = async (req, res) => {
-    const server = createMcpServer();
+    const server = createMcpServer({
+      agentProvider: resolveAgentProviderHeaderValue(req.get(AGENT_PROVIDER_HEADER) ?? undefined),
+    });
     const transport = createStatelessTransport();
 
     let closed = false;

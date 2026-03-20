@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createHttpApp, createMcpBodyErrorHandler } from "../src/http/createHttpApp.js";
+import { DEFAULT_AGENT_PROVIDER, resolveAgentProviderHeaderValue } from "../src/mcp/agentProvider.js";
 
 type MockResponse = {
   headersSent: boolean;
@@ -183,4 +184,11 @@ test("createHttpApp also registers a favicon route for the docs pages", () => {
   const faviconLayer = app.router.stack.find((layer) => (layer as RouteLayer).route?.path === "/favicon.ico") as RouteLayer | undefined;
 
   assert.ok(faviconLayer?.route?.stack?.[0], "expected /favicon.ico route to be registered");
+});
+
+test("resolveAgentProviderHeaderValue falls back to cursor for missing or invalid header values", () => {
+  assert.equal(resolveAgentProviderHeaderValue(undefined), DEFAULT_AGENT_PROVIDER);
+  assert.equal(resolveAgentProviderHeaderValue(""), DEFAULT_AGENT_PROVIDER);
+  assert.equal(resolveAgentProviderHeaderValue("invalid-provider"), DEFAULT_AGENT_PROVIDER);
+  assert.equal(resolveAgentProviderHeaderValue(" claude "), "claude");
 });
