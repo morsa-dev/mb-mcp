@@ -140,3 +140,22 @@ test("tool input validation still surfaces invalid docs_context arguments as too
   assert.equal(invalidDocsContext.isError, true);
   assert.match(String(getFirstTextContent(invalidDocsContext)), /Invalid arguments for tool docs_context/);
 });
+
+test("docs_context surfaces invalid Angular version as a tool error instead of silently falling back", async (t) => {
+  const { client, close } = await createConnectedClient();
+  t.after(close);
+
+  const invalidDocsContext = CallToolResultSchema.parse(
+    await client.callTool({
+      name: "docs_context",
+      arguments: {
+        stack: "angular",
+        version: "banana",
+        queries: ["signal"],
+      },
+    }),
+  );
+
+  assert.equal(invalidDocsContext.isError, true);
+  assert.match(String(getFirstTextContent(invalidDocsContext)), /Invalid Angular docs version "banana"/);
+});

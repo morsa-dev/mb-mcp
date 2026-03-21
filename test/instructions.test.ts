@@ -22,7 +22,10 @@ test("renderInstructionsPage restores the tested provider and setup flow contrac
   assert.match(html, />Config file</);
   assert.match(html, /Create Memory Bank via mcp/);
   assert.match(html, /Optional docs_context example/);
-  assert.match(html, /Use docs_context to fetch official iOS documentation for NavigationStack\./);
+  assert.match(
+    html,
+    /Use docs_context to fetch official Angular documentation for signal with stack=&quot;angular&quot; and version=&quot;20&quot;\./,
+  );
   assert.match(html, /cursor:\/\/anysphere\.cursor-deeplink\/mcp\/install\?name=memory-bank&amp;config=/);
   assert.match(html, /cursor --add-mcp/);
   assert.match(

@@ -6,7 +6,8 @@ const CLAUDE_MCP_DOCS_URL = "https://docs.anthropic.com/fr/docs/claude-code/mcp"
 const CODEX_MCP_DOCS_URL = "https://platform.openai.com/docs/docs-mcp";
 
 export const RUN_COMMAND = "Create Memory Bank via mcp";
-export const DOCS_CONTEXT_EXAMPLE = "Use docs_context to fetch official iOS documentation for NavigationStack.";
+export const DOCS_CONTEXT_EXAMPLE =
+  'Use docs_context to fetch official Angular documentation for signal with stack="angular" and version="20".';
 export const PROVIDER_NOTES: Partial<Record<ProviderId, string>> = {};
 
 const toJsonSnippet = (value: unknown): string => JSON.stringify(value, null, 2);

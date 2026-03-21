@@ -1,8 +1,4 @@
 import {
-  fetchAppleDocumentationSnippet,
-  fetchAppleDocumentationStructuredContext,
-} from "../../adapters/appleDocs/content.js";
-import {
   DOC_FETCH_CACHE_MAX_ENTRIES,
   DOC_FETCH_CACHE_TTL_MS,
   DOC_FETCH_MAX_TOTAL_ATTEMPTS,
@@ -11,11 +7,14 @@ import {
   DOC_FETCH_TIMEOUT_MS,
   type DocsContextDetailLevel,
   type DocsContextItem,
+  type DocsContextStack,
 } from "./types.js";
+import { getDocsContextProvider } from "./providerRegistry.js";
 import { limitExcerpt } from "./utils.js";
 
-type StructuredDocFetchValue = Awaited<ReturnType<typeof fetchAppleDocumentationStructuredContext>>;
-type CompactDocFetchValue = Awaited<ReturnType<typeof fetchAppleDocumentationSnippet>>;
+type Provider = ReturnType<typeof getDocsContextProvider>;
+type StructuredDocFetchValue = Awaited<ReturnType<Provider["fetchStructuredContext"]>>;
+type CompactDocFetchValue = Awaited<ReturnType<Provider["fetchSnippet"]>>;
 type StructuredDocFetchProjection = {
   excerpt?: string;
   details?: DocsContextItem["details"];
@@ -27,6 +26,8 @@ type DocFetchCacheEntry = {
 };
 
 type DocFetchContext = {
+  stack: DocsContextStack;
+  version?: string;
   detailLevel: DocsContextDetailLevel;
   url: string;
   deadline: number;
@@ -41,6 +42,8 @@ export type DocFetchStats = {
 };
 
 export type HydrateDocsContextItemParams = {
+  stack: DocsContextStack;
+  version?: string;
   detailLevel: DocsContextDetailLevel;
   url: string;
   itemIndex: number;
@@ -53,8 +56,12 @@ export type HydrateDocsContextItemParams = {
 
 const docFetchCache = new Map<string, DocFetchCacheEntry>();
 
-const makeDocFetchCacheKey = (detailLevel: DocsContextDetailLevel, url: string, excerptMaxChars: number): string =>
-  `${detailLevel}|${excerptMaxChars}|${url}`;
+const makeDocFetchCacheKey = (
+  stack: DocsContextStack,
+  detailLevel: DocsContextDetailLevel,
+  url: string,
+  excerptMaxChars: number,
+): string => `${stack}|${detailLevel}|${excerptMaxChars}|${url}`;
 
 const pruneDocFetchCache = (): void => {
   const now = Date.now();
@@ -146,7 +153,7 @@ const fetchStructuredContextWithCache = async (
   context: DocFetchContext,
   stats: DocFetchStats,
 ): Promise<StructuredDocFetchValue | null | undefined> => {
-  const cacheKey = makeDocFetchCacheKey(context.detailLevel, context.url, context.excerptMaxChars);
+  const cacheKey = makeDocFetchCacheKey(context.stack, context.detailLevel, context.url, context.excerptMaxChars);
   const cached = readDocFetchCache<StructuredDocFetchValue | null>(cacheKey);
   if (cached.hit) {
     stats.cacheHits += 1;
@@ -162,7 +169,8 @@ const fetchStructuredContextWithCache = async (
   const timeoutMs = buildDocFetchTimeoutMs(context.deadline);
 
   try {
-    const structuredContext = await fetchAppleDocumentationStructuredContext(context.url, {
+    const structuredContext = await getDocsContextProvider(context.stack).fetchStructuredContext(context.url, {
+      ...(context.version ? { version: context.version } : {}),
       timeoutMs,
       retries: DOC_FETCH_RETRIES,
       maxChars: context.excerptMaxChars,
@@ -184,7 +192,7 @@ const fetchSnippetWithCache = async (
   context: DocFetchContext,
   stats: DocFetchStats,
 ): Promise<CompactDocFetchValue | null | undefined> => {
-  const cacheKey = makeDocFetchCacheKey(context.detailLevel, context.url, context.excerptMaxChars);
+  const cacheKey = makeDocFetchCacheKey(context.stack, context.detailLevel, context.url, context.excerptMaxChars);
   const cached = readDocFetchCache<CompactDocFetchValue | null>(cacheKey);
   if (cached.hit) {
     stats.cacheHits += 1;
@@ -200,7 +208,8 @@ const fetchSnippetWithCache = async (
   const timeoutMs = buildDocFetchTimeoutMs(context.deadline);
 
   try {
-    const docSnippet = await fetchAppleDocumentationSnippet(context.url, {
+    const docSnippet = await getDocsContextProvider(context.stack).fetchSnippet(context.url, {
+      ...(context.version ? { version: context.version } : {}),
       timeoutMs,
       retries: DOC_FETCH_RETRIES,
       maxChars: context.excerptMaxChars,
@@ -225,6 +234,8 @@ export const createDocFetchStats = (): DocFetchStats => ({
 });
 
 export const hydrateDocsContextItem = async ({
+  stack,
+  version,
   detailLevel,
   url,
   itemIndex,
@@ -243,6 +254,8 @@ export const hydrateDocsContextItem = async ({
   }
 
   const context: DocFetchContext = {
+    stack,
+    ...(version ? { version } : {}),
     detailLevel,
     url,
     deadline,

@@ -31,6 +31,14 @@ export const registerDocsContextTool: ToolRegistrar = (server) => {
           .enum(DOCS_CONTEXT_SUPPORTED_STACKS)
           .optional()
           .describe(`Target documentation stack. Default: ${DEFAULT_STACK}.`),
+        version: z
+          .string()
+          .trim()
+          .min(1)
+          .optional()
+          .describe(
+            "Optional documentation or framework version hint. For Angular, pass a major or semver value such as 20 or 20.2.0 to target versioned docs.",
+          ),
         detailLevel: z
           .enum(DOCS_CONTEXT_DETAIL_LEVELS)
           .optional()
@@ -69,6 +77,8 @@ export const registerDocsContextTool: ToolRegistrar = (server) => {
       outputSchema: {
         source: z.literal(DOCS_CONTEXT_SOURCE),
         stack: z.enum(DOCS_CONTEXT_SUPPORTED_STACKS),
+        version: z.string().optional(),
+        resolvedVersion: z.string().optional(),
         detailLevel: z.enum(DOCS_CONTEXT_DETAIL_LEVELS),
         queries: z.array(z.string()),
         notice: z.string(),

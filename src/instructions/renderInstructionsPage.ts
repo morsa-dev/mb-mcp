@@ -100,7 +100,7 @@ ${PAGE_STYLES}
           ${renderCodeBlock("agent-run-command", RUN_COMMAND)}
 
           <div class="secondary-example">
-            <p class="secondary-example-title">Optional docs_context example for supporting iOS documentation.</p>
+            <p class="secondary-example-title">Optional docs_context example for stack-specific official documentation.</p>
             ${renderCodeBlock("docs-context-example", DOCS_CONTEXT_EXAMPLE)}
           </div>
         </section>

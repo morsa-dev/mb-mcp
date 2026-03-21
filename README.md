@@ -42,7 +42,8 @@ Use this MCP if you want an agent to generate a project-specific Memory Bank wit
 
 Current `docs_context` support is intentionally narrow:
 
-- `stack`: `ios`
+- `stack`: `ios`, `angular`
+- `version`: optional hint for version-aware documentation sources
 - `detailLevel`: `compact`, `structured`
 
 ## Security / Safety
@@ -69,6 +70,7 @@ Current `docs_context` support is intentionally narrow:
 - `src/features/create`: instruction generation for Memory Bank flows
 - `src/features/docsContext`: documentation-context orchestration
 - `src/adapters/appleDocs`: Apple documentation lookup and extraction
+- `src/adapters/angularDocs`: Angular documentation lookup and extraction
 
 ## Local Development
 

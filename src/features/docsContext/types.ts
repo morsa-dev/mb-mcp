@@ -1,7 +1,7 @@
 export const DOCS_CONTEXT_TOOL_NAME = "docs_context" as const;
 export const DOCS_CONTEXT_SOURCE = "official_docs" as const;
 
-export const DOCS_CONTEXT_SUPPORTED_STACKS = ["ios"] as const;
+export const DOCS_CONTEXT_SUPPORTED_STACKS = ["ios", "angular"] as const;
 export type DocsContextStack = (typeof DOCS_CONTEXT_SUPPORTED_STACKS)[number];
 export const DEFAULT_STACK: DocsContextStack = "ios";
 
@@ -52,6 +52,8 @@ export type DocsContextQueryResult = {
 export type DocsContextPayload = {
   source: typeof DOCS_CONTEXT_SOURCE;
   stack: DocsContextStack;
+  version?: string;
+  resolvedVersion?: string;
   detailLevel: DocsContextDetailLevel;
   queries: string[];
   notice: string;

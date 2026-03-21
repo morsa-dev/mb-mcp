@@ -1,5 +1,6 @@
-import { searchAppleDeveloperDocs } from "../../adapters/appleDocs/search.js";
 import { createDocFetchStats, hydrateDocsContextItem } from "./docFetch.js";
+import { isDocsContextConfigurationError } from "./errors.js";
+import { getDocsContextProvider } from "./providerRegistry.js";
 import {
   DEFAULT_DETAIL_LEVEL,
   DEFAULT_EXCERPT_MAX_CHARS,
@@ -20,6 +21,7 @@ import { limitExcerpt, toQueryResult } from "./utils.js";
 
 export type BuildDocsContextArgs = {
   stack?: DocsContextStack | undefined;
+  version?: string | undefined;
   detailLevel?: DocsContextDetailLevel | undefined;
   structuredTopItemsPerQuery?: number | undefined;
   queries: string[];
@@ -34,6 +36,7 @@ const buildNotice = (hadQueryFailures: boolean): string =>
 
 export const buildDocsContextPayload = async ({
   stack = DEFAULT_STACK,
+  version,
   detailLevel = DEFAULT_DETAIL_LEVEL,
   structuredTopItemsPerQuery,
   queries,
@@ -51,6 +54,8 @@ export const buildDocsContextPayload = async ({
     maxItemsPerQuery,
     structuredTopItemsPerQuery ?? DOC_FETCH_TOP_ITEMS_PER_QUERY,
   );
+  const provider = getDocsContextProvider(stack);
+  const resolvedVersion = provider.resolveVersion(version);
   const deadline = Date.now() + MAX_TOTAL_LOOKUP_BUDGET_MS;
   const results: DocsContextPayload["results"] = [];
   const docFetchStats = createDocFetchStats();
@@ -71,8 +76,8 @@ export const buildDocsContextPayload = async ({
     const timeoutMs = Math.min(MAX_PER_QUERY_TIMEOUT_MS, remainingBudgetMs);
 
     try {
-      const searchItems = await searchAppleDeveloperDocs(query, {
-        type: "documentation",
+      const searchItems = await provider.search(query, {
+        ...(resolvedVersion ? { version: resolvedVersion } : {}),
         maxResults: maxItemsPerQuery,
         excerptMaxChars,
         timeoutMs,
@@ -89,6 +94,8 @@ export const buildDocsContextPayload = async ({
       for (const [itemIndex, item] of topItems.entries()) {
         const fallbackExcerpt = limitExcerpt(item.excerpt, excerptMaxChars);
         const hydrated = await hydrateDocsContextItem({
+          stack,
+          ...(resolvedVersion ? { version: resolvedVersion } : {}),
           detailLevel,
           url: item.url,
           itemIndex,
@@ -111,6 +118,10 @@ export const buildDocsContextPayload = async ({
 
       results.push(toQueryResult(query, contextItems));
     } catch (error) {
+      if (isDocsContextConfigurationError(error)) {
+        throw error;
+      }
+
       hadQueryFailures = true;
       console.warn(`docs_context query failed: "${query}"`, error);
       results.push(toQueryResult(query, []));
@@ -120,6 +131,8 @@ export const buildDocsContextPayload = async ({
   return {
     source: DOCS_CONTEXT_SOURCE,
     stack,
+    ...(version ? { version } : {}),
+    ...(resolvedVersion ? { resolvedVersion } : {}),
     detailLevel,
     queries,
     notice: buildNotice(hadQueryFailures),
